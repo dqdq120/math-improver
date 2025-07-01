@@ -1,29 +1,19 @@
-<!DOCTYPE html>
+[media pointer="file-service://file-V9SR9KGnejgj4mLZfhNZxR"]
+make the quality better <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>WebGL High-Quality Bloom</title>
-<style>
-    body { margin: 0; overflow: hidden; }
-    canvas { display: block; background: black; width: 100vw; height: 100vh; }
-</style>
+<title>WebGL Bloom with Multiple Cubes</title>
+<style> body {margin:0;overflow:hidden;}canvas{width:100vw;height:100vh;display:block;background:black;} </style>
 </head>
 <body>
 <canvas id="glCanvas"></canvas>
 <script>
-const glCanvas = document.getElementById('glCanvas');
 const gl = glCanvas.getContext('webgl');
-if (!gl) throw 'WebGL not supported';
+if (!gl) throw 'WebGL unsupported';
 
-// Handle resolution
-function resize() {
-    glCanvas.width = window.innerWidth * window.devicePixelRatio;
-    glCanvas.height = window.innerHeight * window.devicePixelRatio;
-}
-window.addEventListener('resize', resize);
-resize();
-
-// Vector and matrix math (same as before)
+// Vector math functions
+function vecAdd(a, b) { return [a[0]+b[0], a[1]+b[1], a[2]+b[2]]; }
 function vecSub(a, b) { return [a[0]-b[0], a[1]-b[1], a[2]-b[2]]; }
 function vecCross(a, b) {
     return [
@@ -32,15 +22,18 @@ function vecCross(a, b) {
         a[0]*b[1] - a[1]*b[0]
     ];
 }
+function vecDot(a, b) { return a[0]*b[0] + a[1]*b[1] + a[2]*b[2]; }
 function vecNormalize(v) {
     const len = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
     return [v[0]/len, v[1]/len, v[2]/len];
 }
-function vecDot(a, b) { return a[0]*b[0] + a[1]*b[1] + a[2]*b[2]; }
+
+// Matrix functions
 function lookAt(eye, target, up) {
     const z = vecNormalize(vecSub(eye, target));
     const x = vecNormalize(vecCross(up, z));
     const y = vecNormalize(vecCross(z, x));
+    
     return [
         x[0], y[0], z[0], 0,
         x[1], y[1], z[1], 0,
@@ -48,37 +41,41 @@ function lookAt(eye, target, up) {
         -vecDot(x, eye), -vecDot(y, eye), -vecDot(z, eye), 1
     ];
 }
+
 function perspective(fov, aspect, near, far) {
-    const f = 1 / Math.tan(fov / 2);
+    const f = 1 / Math.tan(fov/2);
     const range = near - far;
     return [
-        f / aspect, 0, 0, 0,
+        f/aspect, 0, 0, 0,
         0, f, 0, 0,
-        0, 0, (near + far) / range, -1,
-        0, 0, (2 * near * far) / range, 0
+        0, 0, (near+far)/range, -1,
+        0, 0, (2*near*far)/range, 0
     ];
 }
+
 function translation(tx, ty, tz) {
     return [
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        tx, ty, tz, 1
+        1,0,0,0,
+        0,1,0,0,
+        0,0,1,0,
+        tx,ty,tz,1
     ];
 }
+
 function rotY(a) {
-    const c = Math.cos(a), s = Math.sin(a);
+    const c=Math.cos(a), s=Math.sin(a);
     return [c,0,-s,0, 0,1,0,0, s,0,c,0, 0,0,0,1];
 }
+
 function mul(a, b) {
     const r = [];
-    for (let i = 0; i < 4; ++i)
-        for (let j = 0; j < 4; ++j)
-            r[i * 4 + j] = a[i * 4] * b[j] + a[i * 4 + 1] * b[j + 4] + a[i * 4 + 2] * b[j + 8] + a[i * 4 + 3] * b[j + 12];
+    for(let i=0;i<4;++i)
+        for(let j=0;j<4;++j)
+            r[i*4+j]=a[i*4]*b[j]+a[i*4+1]*b[j+4]+a[i*4+2]*b[j+8]+a[i*4+3]*b[j+12];
     return r;
 }
 
-// Shader helpers
+// Utils
 function shader(type, src) {
     const s = gl.createShader(type);
     gl.shaderSource(s, src);
@@ -94,12 +91,14 @@ function program(vsSrc, fsSrc) {
     if (!gl.getProgramParameter(p, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(p));
     return p;
 }
-function createFBO(w, h) {
+function createFBO(w,h) {
     const tex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     const fb = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
@@ -107,13 +106,80 @@ function createFBO(w, h) {
 }
 
 // Shaders
-const vsCube = `attribute vec3 aPos; uniform mat4 uProj, uView, uModel; void main(){ gl_Position = uProj * uView * uModel * vec4(aPos, 1); }`;
-const fsCube = `precision mediump float; uniform vec3 uColor; void main(){ gl_FragColor = vec4(uColor, 1); }`;
-const vsQuad = `attribute vec2 aPos; varying vec2 vUv; void main(){ vUv = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0, 1); }`;
-const fsExtract = `precision mediump float; uniform sampler2D uTex; varying vec2 vUv; void main(){ vec3 c = texture2D(uTex, vUv).rgb; float brightness = dot(c, vec3(0.2126, 0.7152, 0.0722)); gl_FragColor = brightness > 0.7 ? vec4(c, 1.0) : vec4(0); }`;
-const fsBlurH = `precision mediump float; uniform sampler2D uTex; uniform float uTexelSize; varying vec2 vUv; void main(){ vec4 sum = vec4(0); for(int i = -5; i <= 5; ++i) sum += texture2D(uTex, vUv + vec2(float(i) * uTexelSize, 0)) * 0.09; gl_FragColor = sum; }`;
-const fsBlurV = `precision mediump float; uniform sampler2D uTex; uniform float uTexelSize; varying vec2 vUv; void main(){ vec4 sum = vec4(0); for(int i = -5; i <= 5; ++i) sum += texture2D(uTex, vUv + vec2(0, float(i) * uTexelSize)) * 0.09; gl_FragColor = sum; }`;
-const fsFinal = `precision mediump float; uniform sampler2D uScene, uBloom; varying vec2 vUv; void main(){ vec3 scene = texture2D(uScene, vUv).rgb; vec3 bloom = texture2D(uBloom, vUv).rgb; vec3 color = scene + bloom * 1.0; color = pow(color, vec3(1.0/2.2)); gl_FragColor = vec4(color, 1); }`;
+const vsCube = `
+attribute vec3 aPos;
+uniform mat4 uProj;
+uniform mat4 uView;
+uniform mat4 uModel;
+void main() {
+    gl_Position = uProj * uView * uModel * vec4(aPos,1);
+}`;
+const fsCube = `
+precision mediump float;
+uniform vec3 uColor;
+void main() {
+    gl_FragColor = vec4(uColor,1);
+}`;
+
+const vsQuad = `attribute vec2 aPos; varying vec2 vUv; void main(){ vUv=aPos*0.5+0.5; gl_Position=vec4(aPos,0,1); }`;
+const fsExtract = `
+precision mediump float;
+uniform sampler2D uTex;
+varying vec2 vUv;
+void main() {
+    vec3 c = texture2D(uTex, vUv).rgb;
+    float brightness = dot(c, vec3(0.2126, 0.7152, 0.0722));
+    gl_FragColor = brightness > 0.7 ? vec4(c, 1.0) : vec4(0.0, 0.0, 0.0, 1.0);
+}
+`;
+const fsBlurH = `
+precision mediump float;
+uniform sampler2D uTex;
+uniform float uTexelSize;
+varying vec2 vUv;
+void main() {
+    vec4 sum = vec4(0.0);
+    sum += texture2D(uTex, vec2(vUv.x - 4.0 * uTexelSize, vUv.y)) * 0.05;
+    sum += texture2D(uTex, vec2(vUv.x - 3.0 * uTexelSize, vUv.y)) * 0.09;
+    sum += texture2D(uTex, vec2(vUv.x - 2.0 * uTexelSize, vUv.y)) * 0.12;
+    sum += texture2D(uTex, vec2(vUv.x - 1.0 * uTexelSize, vUv.y)) * 0.15;
+    sum += texture2D(uTex, vec2(vUv.x, vUv.y)) * 0.18;
+    sum += texture2D(uTex, vec2(vUv.x + 1.0 * uTexelSize, vUv.y)) * 0.15;
+    sum += texture2D(uTex, vec2(vUv.x + 2.0 * uTexelSize, vUv.y)) * 0.12;
+    sum += texture2D(uTex, vec2(vUv.x + 3.0 * uTexelSize, vUv.y)) * 0.09;
+    sum += texture2D(uTex, vec2(vUv.x + 4.0 * uTexelSize, vUv.y)) * 0.05;
+    gl_FragColor = sum;
+}
+`;
+const fsBlurV = `
+precision mediump float;
+uniform sampler2D uTex;
+uniform float uTexelSize;
+varying vec2 vUv;
+void main() {
+    vec4 sum = vec4(0.0);
+    sum += texture2D(uTex, vec2(vUv.x, vUv.y - 4.0 * uTexelSize)) * 0.05;
+    sum += texture2D(uTex, vec2(vUv.x, vUv.y - 3.0 * uTexelSize)) * 0.09;
+    sum += texture2D(uTex, vec2(vUv.x, vUv.y - 2.0 * uTexelSize)) * 0.12;
+    sum += texture2D(uTex, vec2(vUv.x, vUv.y - 1.0 * uTexelSize)) * 0.15;
+    sum += texture2D(uTex, vec2(vUv.x, vUv.y)) * 0.18;
+    sum += texture2D(uTex, vec2(vUv.x, vUv.y + 1.0 * uTexelSize)) * 0.15;
+    sum += texture2D(uTex, vec2(vUv.x, vUv.y + 2.0 * uTexelSize)) * 0.12;
+    sum += texture2D(uTex, vec2(vUv.x, vUv.y + 3.0 * uTexelSize)) * 0.09;
+    sum += texture2D(uTex, vec2(vUv.x, vUv.y + 4.0 * uTexelSize)) * 0.05;
+    gl_FragColor = sum;
+}
+`;
+const fsFinal = `
+precision mediump float;
+uniform sampler2D uScene, uBloom;
+varying vec2 vUv;
+void main() {
+    vec3 scene = texture2D(uScene, vUv).rgb;
+    vec3 bloom = texture2D(uBloom, vUv).rgb;
+    gl_FragColor = vec4(scene + bloom * 0.7, 1.0);
+}
+`;
 
 // Programs
 const progCube = program(vsCube, fsCube);
@@ -125,10 +191,17 @@ const progFinal = program(vsQuad, fsFinal);
 // Buffers
 const quadBuf = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
 
-const cubeVerts = new Float32Array([-1,-1,1, 1,-1,1, 1,1,1, -1,1,1, -1,-1,-1, -1,1,-1, 1,1,-1, 1,-1,-1]);
-const cubeIdx = new Uint16Array([0,1,2,2,3,0,4,5,6,6,7,4,4,0,3,3,5,4,7,6,2,2,1,7,5,3,2,2,6,5,4,7,1,1,0,4]);
+const cubeVerts = new Float32Array([
+    -1,-1,1, 1,-1,1, 1,1,1, -1,1,1,
+    -1,-1,-1, -1,1,-1, 1,1,-1, 1,-1,-1
+]);
+const cubeIdx = new Uint16Array([
+    0,1,2, 2,3,0, 4,5,6, 6,7,4,
+    4,0,3, 3,5,4, 7,6,2, 2,1,7,
+    5,3,2, 2,6,5, 4,7,1, 1,0,4
+]);
 const vbo = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
 gl.bufferData(gl.ARRAY_BUFFER, cubeVerts, gl.STATIC_DRAW);
@@ -136,107 +209,125 @@ const ibo = gl.createBuffer();
 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
 gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, cubeIdx, gl.STATIC_DRAW);
 
-// Scene setup
-const gridSize = 10, spacing = 2.5, cubes = [];
-for (let i = 0; i < gridSize; i++)
-    for (let j = 0; j < gridSize; j++)
-        cubes.push({ pos: [(i - gridSize/2) * spacing, 0, (j - gridSize/2) * spacing], color: [i/gridSize, j/gridSize, 1.0 - i/gridSize], rotation: Math.random() * Math.PI * 2 });
+// FBOs
+const w = glCanvas.width, h = glCanvas.height;
+const fScene = createFBO(w,h);
+const fBright = createFBO(w/2,h/2);
+const fBlurH = createFBO(w/2,h/2);
+const fBlurV = createFBO(w/2,h/2);
 
-// Draw Helpers
+// Create multiple cubes
+const gridSize = 10;
+const spacing = 2.5;
+const cubes = [];
+for (let i = 0; i < gridSize; i++) {
+    for (let j = 0; j < gridSize; j++) {
+        cubes.push({
+            pos: [(i - gridSize/2) * spacing, 0, (j - gridSize/2) * spacing],
+            color: [i/gridSize, j/gridSize, 1.0 - i/gridSize],
+            rotation: Math.random() * Math.PI * 2
+        });
+    }
+}
+
+// Draw
 function drawCubes(fbo) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-    gl.viewport(0, 0, glCanvas.width, glCanvas.height);
-    gl.clearColor(0, 0, 0, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
+    gl.viewport(0,0,w,h);
+    gl.clearColor(0,0,0,1);
+    gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+    
     gl.useProgram(progCube);
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    const locPos = gl.getAttribLocation(progCube, 'aPos');
-    gl.vertexAttribPointer(locPos, 3, gl.FLOAT, false, 0, 0);
+    const locPos = gl.getAttribLocation(progCube,'aPos');
+    gl.vertexAttribPointer(locPos,3,gl.FLOAT,false,0,0);
     gl.enableVertexAttribArray(locPos);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
-
-    const aspect = glCanvas.width / glCanvas.height;
+    
+    const aspect = w/h;
     const proj = perspective(Math.PI/3, aspect, 0.1, 100);
-    const view = lookAt([0, 15, 20], [0, 0, 0], [0, 1, 0]);
-
-    gl.uniformMatrix4fv(gl.getUniformLocation(progCube, 'uProj'), false, proj);
-    gl.uniformMatrix4fv(gl.getUniformLocation(progCube, 'uView'), false, view);
-
+    const eye = [0, 15, 20];
+    const view = lookAt(eye, [0,0,0], [0,1,0]);
+    
+    const locProj = gl.getUniformLocation(progCube, 'uProj');
+    const locView = gl.getUniformLocation(progCube, 'uView');
+    gl.uniformMatrix4fv(locProj, false, proj);
+    gl.uniformMatrix4fv(locView, false, view);
+    
     const locModel = gl.getUniformLocation(progCube, 'uModel');
     const locColor = gl.getUniformLocation(progCube, 'uColor');
-
+    
+    const time = Date.now() * 0.001;
     for (const cube of cubes) {
         cube.rotation += 0.01;
         const model = mul(translation(...cube.pos), rotY(cube.rotation));
         gl.uniformMatrix4fv(locModel, false, model);
         gl.uniform3fv(locColor, cube.color);
-        gl.drawElements(gl.TRIANGLES, cubeIdx.length, gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(gl.TRIANGLES, cubeIdx.length, gl.UNSIGNED_SHORT,0);
     }
 }
 
 function drawQuad(prog, tex, texelSize = 0) {
     gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
-    const loc = gl.getAttribLocation(prog, 'aPos');
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const loc = gl.getAttribLocation(prog,'aPos');
+    gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
     gl.enableVertexAttribArray(loc);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, tex);
-    if (texelSize)
-        gl.uniform1f(gl.getUniformLocation(prog, 'uTexelSize'), texelSize);
-    gl.uniform1i(gl.getUniformLocation(prog, 'uTex'), 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    if (texelSize > 0) {
+        gl.uniform1f(gl.getUniformLocation(prog,'uTexelSize'), texelSize);
+    }
+    gl.uniform1i(gl.getUniformLocation(prog,'uTex'),0);
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 }
 
-// Main Render Loop
-const bloomScale = 0.75;
-let fScene, fBright, fBlurH, fBlurV;
-
-function setupFBOs() {
-    fScene = createFBO(glCanvas.width, glCanvas.height);
-    fBright = createFBO(glCanvas.width * bloomScale, glCanvas.height * bloomScale);
-    fBlurH = createFBO(glCanvas.width * bloomScale, glCanvas.height * bloomScale);
-    fBlurV = createFBO(glCanvas.width * bloomScale, glCanvas.height * bloomScale);
-}
-setupFBOs();
-window.addEventListener('resize', setupFBOs);
-
-gl.enable(gl.DEPTH_TEST);
-function render() {
-    drawCubes(fScene.fb);
-
+function postProcess() {
+    // Step 1: Extract bright areas (downsampled)
     gl.bindFramebuffer(gl.FRAMEBUFFER, fBright.fb);
-    gl.viewport(0, 0, glCanvas.width * bloomScale, glCanvas.height * bloomScale);
+    gl.viewport(0,0,w/2,h/2);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.useProgram(progExtract);
     drawQuad(progExtract, fScene.tex);
-
+    
+    // Step 2: Horizontal blur
     gl.bindFramebuffer(gl.FRAMEBUFFER, fBlurH.fb);
+    gl.viewport(0,0,w/2,h/2);
+    gl.clear(gl.COLOR_BUFFER_BIT);
     gl.useProgram(progBlurH);
-    drawQuad(progBlurH, fBright.tex, 1.0 / glCanvas.width);
-
+    drawQuad(progBlurH, fBright.tex, 1.0/w);
+    
+    // Step 3: Vertical blur
     gl.bindFramebuffer(gl.FRAMEBUFFER, fBlurV.fb);
+    gl.viewport(0,0,w/2,h/2);
+    gl.clear(gl.COLOR_BUFFER_BIT);
     gl.useProgram(progBlurV);
-    drawQuad(progBlurV, fBlurH.tex, 1.0 / glCanvas.height);
-
+    drawQuad(progBlurV, fBlurH.tex, 1.0/h);
+    
+    // Step 4: Combine with original scene
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.viewport(0, 0, glCanvas.width, glCanvas.height);
+    gl.viewport(0,0,w,h);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.useProgram(progFinal);
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
+    const l0 = gl.getAttribLocation(progFinal,'aPos');
+    gl.vertexAttribPointer(l0,2,gl.FLOAT,false,0,0);
+    gl.enableVertexAttribArray(l0);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, fScene.tex);
-    gl.uniform1i(gl.getUniformLocation(progFinal, 'uScene'), 0);
+    gl.uniform1i(gl.getUniformLocation(progFinal,'uScene'),0);
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, fBlurV.tex);
-    gl.uniform1i(gl.getUniformLocation(progFinal, 'uBloom'), 1);
-    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
-    gl.vertexAttribPointer(gl.getAttribLocation(progFinal, 'aPos'), 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(gl.getAttribLocation(progFinal, 'aPos'));
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-    requestAnimationFrame(render);
+    gl.uniform1i(gl.getUniformLocation(progFinal,'uBloom'),1);
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 }
-render();
+
+gl.enable(gl.DEPTH_TEST);
+function loop(){
+    drawCubes(fScene.fb);
+    postProcess();
+    requestAnimationFrame(loop);
+}
+loop();
 </script>
 </body>
 </html>
