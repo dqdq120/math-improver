@@ -3,10 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <title>WebGL Bloom with Multiple Cubes</title>
-<style> body {margin:0;overflow:hidden;}canvas{width:100vw;height:100vh;display:block;background:black;} </style>
+<style> body {margin:0;overflow:hidden;}canvas{width:100vw;height:100vh;display:block;background:black;} 
+.blur-overlay{
+    backdrop-filter: blur(26px) brightness(1.4) saturate(10);
+    background-color: transparent;
+    width:100vw;height:100vh;
+    transform: translateY(-100vh);  
+}
+    
+</style>
 </head>
 <body>
 <canvas id="glCanvas"></canvas>
+<div class="blur-overlay"></div>
 <script>
 const gl = glCanvas.getContext('webgl');
 if (!gl) throw 'WebGL unsupported';
@@ -128,7 +137,7 @@ varying vec2 vUv;
 void main() {
     vec3 c = texture2D(uTex, vUv).rgb;
     float brightness = dot(c, vec3(0.2126, 0.7152, 0.0722));
-    gl_FragColor = brightness > 0.7 ? vec4(c, 1.0) : vec4(0.0, 0.0, 0.0, 1.0);
+    gl_FragColor = vec4(c, 1.0);
 }
 `;
 const fsBlurH = `
@@ -208,22 +217,48 @@ const ibo = gl.createBuffer();
 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
 gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, cubeIdx, gl.STATIC_DRAW);
 
-// FBOs
-const w = glCanvas.width, h = glCanvas.height;
-const fScene = createFBO(w,h);
-const fBright = createFBO(w/2,h/2);
-const fBlurH = createFBO(w/2,h/2);
-const fBlurV = createFBO(w/2,h/2);
 
-// Create multiple cubes
-const gridSize = 10;
+function resizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    glCanvas.width = glCanvas.clientWidth * dpr;
+    glCanvas.height = glCanvas.clientHeight * dpr;
+}
+
+// Initial setup
+resizeCanvas();
+let w = glCanvas.width;
+let h = glCanvas.height;
+let fScene = createFBO(w, h);
+let fBright = createFBO(w / 2, h / 2);
+let fBlurH = createFBO(w / 2, h / 2);
+let fBlurV = createFBO(w / 2, h / 2);
+
+window.addEventListener('resize', () => {
+    resizeCanvas();
+    w = glCanvas.width;
+    h = glCanvas.height;
+    fScene = createFBO(w, h);
+    fBright = createFBO(w / 2, h / 2);
+    fBlurH = createFBO(w / 2, h / 2);
+    fBlurV = createFBO(w / 2, h / 2);
+});
+
+
+const gridSize = 20;
 const spacing = 2.5;
 const cubes = [];
 for (let i = 0; i < gridSize; i++) {
     for (let j = 0; j < gridSize; j++) {
+
+        // Slight random variations around white (1.0)
+        const variation = () => 0.45 + Math.random() * 0.15; // Range: 0.85 to 1.0
+        const r = variation();
+        const g = variation();
+        const b = variation();
+
         cubes.push({
-            pos: [(i - gridSize/2) * spacing, 0, (j - gridSize/2) * spacing],
-            color: [i/gridSize, j/gridSize, 1.0 - i/gridSize],
+            pos: [(i - gridSize/2) * spacing, (i - gridSize/2) * spacing, (j - gridSize/2) * spacing],
+            color: [r, g, b],
             rotation: Math.random() * Math.PI * 2
         });
     }
@@ -246,7 +281,7 @@ function drawCubes(fbo) {
     const aspect = w/h;
     const proj = perspective(Math.PI/3, aspect, 0.1, 100);
     const eye = [0, 15, 20];
-    const view = lookAt(eye, [0,0,0], [0,1,0]);
+    const view = lookAt(eye, [0,0,6], [0,1,0]);
     
     const locProj = gl.getUniformLocation(progCube, 'uProj');
     const locView = gl.getUniformLocation(progCube, 'uView');
@@ -258,7 +293,7 @@ function drawCubes(fbo) {
     
     const time = Date.now() * 0.001;
     for (const cube of cubes) {
-        cube.rotation += 0.01;
+        cube.rotation += 0.03;
         const model = mul(translation(...cube.pos), rotY(cube.rotation));
         gl.uniformMatrix4fv(locModel, false, model);
         gl.uniform3fv(locColor, cube.color);
