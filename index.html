@@ -298,7 +298,7 @@ function drawCubes(fbo) {
     prevTime = currentTime;
 
     for (const cube of cubes) {
-        cube.rotation += 0.6 * deltaTime;  // Rotation speed scaled by deltaTime
+        cube.rotation += 0.4 * deltaTime;  // Rotation speed scaled by deltaTime
         const model = mul(translation(...cube.pos), rotY(cube.rotation));
         gl.uniformMatrix4fv(locModel, false, model);
         gl.uniform3fv(locColor, cube.color);
