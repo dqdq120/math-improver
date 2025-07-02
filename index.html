@@ -264,24 +264,26 @@ for (let i = 0; i < gridSize; i++) {
     }
 }
 
+let prevTime = Date.now() * 0.001;
+
 // Draw
 function drawCubes(fbo) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-    gl.viewport(0,0,w,h);
-    gl.clearColor(0,0,0,1);
-    gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+    gl.viewport(0, 0, w, h);
+    gl.clearColor(0, 0, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
     gl.useProgram(progCube);
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    const locPos = gl.getAttribLocation(progCube,'aPos');
-    gl.vertexAttribPointer(locPos,3,gl.FLOAT,false,0,0);
+    const locPos = gl.getAttribLocation(progCube, 'aPos');
+    gl.vertexAttribPointer(locPos, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(locPos);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
     
-    const aspect = w/h;
-    const proj = perspective(Math.PI/3, aspect, 0.1, 100);
+    const aspect = w / h;
+    const proj = perspective(Math.PI / 3, aspect, 0.1, 100);
     const eye = [0, 15, 20];
-    const view = lookAt(eye, [0,0,6], [0,1,0]);
+    const view = lookAt(eye, [0, 0, 6], [0, 1, 0]);
     
     const locProj = gl.getUniformLocation(progCube, 'uProj');
     const locView = gl.getUniformLocation(progCube, 'uView');
@@ -291,15 +293,19 @@ function drawCubes(fbo) {
     const locModel = gl.getUniformLocation(progCube, 'uModel');
     const locColor = gl.getUniformLocation(progCube, 'uColor');
     
-    const time = Date.now() * 0.001;
+    const currentTime = Date.now() * 0.001;
+    const deltaTime = currentTime - prevTime;
+    prevTime = currentTime;
+
     for (const cube of cubes) {
-        cube.rotation += 0.03;
+        cube.rotation += 0.6 * deltaTime;  // Rotation speed scaled by deltaTime
         const model = mul(translation(...cube.pos), rotY(cube.rotation));
         gl.uniformMatrix4fv(locModel, false, model);
         gl.uniform3fv(locColor, cube.color);
-        gl.drawElements(gl.TRIANGLES, cubeIdx.length, gl.UNSIGNED_SHORT,0);
+        gl.drawElements(gl.TRIANGLES, cubeIdx.length, gl.UNSIGNED_SHORT, 0);
     }
 }
+
 
 function drawQuad(prog, tex, texelSize = 0) {
     gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
