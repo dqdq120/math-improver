@@ -5,7 +5,7 @@
 <title>WebGL Bloom with Multiple Cubes</title>
 <style> body {margin:0;overflow:hidden;}canvas{width:100vw;height:100vh;display:block;background:black;} 
 .blur-overlay{
-    backdrop-filter: blur(26px) brightness(1.4) saturate(10);
+    backdrop-filter:blur(60px) brightness(1.6) saturate(14) contrast(1.4);
     background-color: transparent;
     width:100vw;height:100vh;
     transform: translateY(-100vh);  
@@ -16,6 +16,7 @@
 <body>
 <canvas id="glCanvas"></canvas>
 <div class="blur-overlay"></div>
+<div></div>
 <script>
 const gl = glCanvas.getContext('webgl');
 if (!gl) throw 'WebGL unsupported';
