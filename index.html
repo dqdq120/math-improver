@@ -1,59 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>WebGL Bloom with Multiple Cubes</title>
   <style>
-    body { margin: 0; overflow: hidden; }
-    canvas { width: 100vw; height: 100vh; display: block; background: black; }
+    :root {
+      --margin: 2vh;
+      --width: calc((100vw - var(--margin)) / 3 - var(--margin));
+      --scale-ratio:1;
+    }
 
-    .blur-overlay {
-      backdrop-filter: blur(60px) saturate(4) hue-rotate(45deg) brightness(1.2);
-      background-color: transparent;
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+    canvas {
       width: 100vw;
-      height: 1000vh;
-      transform: translateY(-500vh);
+      height: 100vh;
+      display: block;
+      background: black;
     }
 
     .video {
       width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      display: block;
+    }
+
+    .blur-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      backdrop-filter: blur(60px) saturate(4) hue-rotate(45deg) brightness(1.2);
+      background-color: transparent;
+      pointer-events: none;
+      z-index: 10;
     }
 
     .jump-box {
-  width: 40vw;
-  height: 40vw;
-  background-image: url("MurkLogo-removebg.png");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
-  border-radius: 50%;
+      width: var(--width);
+      height: 96vh;
+      background: rgba(255, 255, 255, 0.61);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      position: absolute;
+      top: calc(var(--margin) - 100vh / 2);
+      left:calc(var(--margin) + var(--width) / 2);
+      opacity: 0;
+      animation: jumpIn 0.87s ease-out forwards;
+      z-index: 100;
+      transition: transform 0.3s ease;
+    }
 
-  position: absolute;
-  left: 50%;
-  top: calc(-40vw / 2);
-  z-index: 1000;
+  .jump-box:hover {
+    transform: scale(var(--scale-ratio));
+    transform-origin: center;
+  }
 
-  transform: translateX(-50%) translateY(100vh);
-  opacity: 0;
+    .jump-box-2 {
+      left: calc(var(--width) * 1.5 + var(--margin) * 2);
+    }
 
-  animation: jumpIn 0.87s ease-out forwards;
-}
+    .jump-box-3 {
+      left: calc(var(--width) * 2.5 + var(--margin) * 3);
+    }
 
 @keyframes jumpIn {
   0% {
-    transform: translateX(-50%) translateY(100vh) scale(0.8);
+    translate: -50% 100vh;
+    scale: 0.8;
     opacity: 0;
   }
   60% {
-    transform: translateX(-50%) translateY(40vh) scale(1.05);
+    translate: -50% 40vh;
+    scale: 1.05;
     opacity: 1;
   }
   80% {
-    transform: translateX(-50%) translateY(50vh) scale(0.97);
+    translate: -50% 50vh;
+    scale: 0.97;
     opacity: 1;
   }
   100% {
-    transform: translateX(-50%) translateY(50vh) scale(1);
+    translate: -50% 50vh;
+    scale: 1;
     opacity: 1;
   }
 }
@@ -62,9 +96,26 @@
 </head>
 <body>
   <video class="video" autoplay muted loop poster="ezgif-frame-001.jpg">
-    <source src="Untitled video - Made with Clipchamp.mp4" preload="auto" type="video/mp4">
+    <source src="Untitled video - Made with Clipchamp.mp4" type="video/mp4" />
   </video>
+
   <div class="blur-overlay"></div>
-  <div class="jump-box"></div>
+
+  <div class="jump-box jump-box-1"></div>
+  <div class="jump-box jump-box-2"></div>
+  <div class="jump-box jump-box-3"></div>
 </body>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const jumpBox = document.querySelector('.jump-box'); // Use the first one
+
+    if (jumpBox) {
+      const width = jumpBox.offsetWidth;
+      const scale = (width + window.innerHeight/50) / width;
+      document.documentElement.style.setProperty('--scale-ratio', scale);
+    }
+  });
+</script>
+
+
 </html>
