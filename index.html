@@ -7,7 +7,8 @@
     :root {
       --margin: 2vh;
       --width: calc((100vw - var(--margin)) / 3 - var(--margin));
-      --scale-ratio:1;
+      --scale-ratio: 1;
+      --scale-ratio2: 1;
     }
 
     body {
@@ -43,23 +44,23 @@
 
     .jump-box {
       width: var(--width);
-      height: 96vh;
+      height: 81vh;
       background: rgba(255, 255, 255, 0.61);
       backdrop-filter: blur(20px);
       border-radius: 20px;
       position: absolute;
-      top: calc(var(--margin) - 100vh / 2);
-      left:calc(var(--margin) + var(--width) / 2);
+      top: calc(var(--margin) - 100vh / 2 + 15vh);
+      left: calc(var(--margin) + var(--width) / 2);
       opacity: 0;
       animation: jumpIn 0.87s ease-out forwards;
       z-index: 100;
       transition: transform 0.3s ease;
     }
 
-  .jump-box:hover {
-    transform: scale(var(--scale-ratio));
-    transform-origin: center;
-  }
+    .jump-box:hover {
+      transform: scale(var(--scale-ratio));
+      transform-origin: center;
+    }
 
     .jump-box-2 {
       left: calc(var(--width) * 1.5 + var(--margin) * 2);
@@ -69,29 +70,40 @@
       left: calc(var(--width) * 2.5 + var(--margin) * 3);
     }
 
-@keyframes jumpIn {
-  0% {
-    translate: -50% 100vh;
-    scale: 0.8;
-    opacity: 0;
-  }
-  60% {
-    translate: -50% 40vh;
-    scale: 1.05;
-    opacity: 1;
-  }
-  80% {
-    translate: -50% 50vh;
-    scale: 0.97;
-    opacity: 1;
-  }
-  100% {
-    translate: -50% 50vh;
-    scale: 1;
-    opacity: 1;
-  }
-}
+    .jump-box-4 {
+      top: calc(var(--margin) - 100vh / 2);
+      height: calc(15vh -  var(--margin));
+      left: calc(var(--margin) + (100vw - var(--margin)*2.25 )/ 2);
+      width: calc(100vw - var(--margin)*2.25);
+    }
 
+    .jump-box-4:hover {
+      transform: scale(var(--scale-ratio2));
+      transform-origin: center;
+    }
+
+    @keyframes jumpIn {
+      0% {
+        translate: -50% 100vh;
+        scale: 0.8;
+        opacity: 0;
+      }
+      60% {
+        translate: -50% 40vh;
+        scale: 1.05;
+        opacity: 1;
+      }
+      80% {
+        translate: -50% 50vh;
+        scale: 0.97;
+        opacity: 1;
+      }
+      100% {
+        translate: -50% 50vh;
+        scale: 1;
+        opacity: 1;
+      }
+    }
   </style>
 </head>
 <body>
@@ -104,18 +116,42 @@
   <div class="jump-box jump-box-1"></div>
   <div class="jump-box jump-box-2"></div>
   <div class="jump-box jump-box-3"></div>
+  <div class="jump-box jump-box-4"></div>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const jumpBox = document.querySelector('.jump-box');
+      const jumpBox2 = document.querySelector('.jump-box-4');
+
+      if (jumpBox) {
+        const width = jumpBox.offsetWidth;
+        const scale = (width + window.innerHeight / 50) / width;
+        document.documentElement.style.setProperty('--scale-ratio', scale);
+      }
+
+      if (jumpBox2) {
+        const width2 = jumpBox2.offsetWidth;
+        const scale2 = (width2 + window.innerHeight / 50) / width2;
+        document.documentElement.style.setProperty('--scale-ratio2', scale2);
+      }
+    });
+    window.addEventListener('resize', () => {
+  const jumpBox = document.querySelector('.jump-box');
+  const jumpBox2 = document.querySelector('.jump-box-4');
+
+  if (jumpBox) {
+    const width = jumpBox.offsetWidth;
+    const scale = (width + window.innerHeight / 50) / width;
+    document.documentElement.style.setProperty('--scale-ratio', scale);
+  }
+
+  if (jumpBox2) {
+    const width2 = jumpBox2.offsetWidth;
+    const scale2 = (width2 + window.innerHeight / 50) / width2;
+    document.documentElement.style.setProperty('--scale-ratio2', scale2);
+  }
+});
+
+  </script>
 </body>
-<script>
-  window.addEventListener('DOMContentLoaded', () => {
-    const jumpBox = document.querySelector('.jump-box'); // Use the first one
-
-    if (jumpBox) {
-      const width = jumpBox.offsetWidth;
-      const scale = (width + window.innerHeight/50) / width;
-      document.documentElement.style.setProperty('--scale-ratio', scale);
-    }
-  });
-</script>
-
-
 </html>
