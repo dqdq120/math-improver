@@ -10,11 +10,11 @@
       --width: calc((100vw - var(--margin)) / 3 - var(--margin));
       --scale-ratio: 1;
       --scale-ratio2: 1;
-
     }
-* {
-  transition: background-color 0.3s ease;
-}
+
+    * {
+      transition: background-color 0.3s ease;
+    }
 
     body {
       margin: 0;
@@ -54,7 +54,7 @@
       animation: jumpIn 0.87s ease-out forwards;
       z-index: 100;
       transition: transform 0.3s ease;
-      display:flex;
+      display: flex;
       justify-content: center;
       align-items: center;
     }
@@ -64,11 +64,12 @@
       transform-origin: center;
       border: none;
       outline: none;
+      backdrop-filter: blur(40px);
+      background-color: rgba(255, 255, 255, 0.9);
     }
 
     .jump-box-2 {
       left: calc(var(--width) * 1.5 + var(--margin) * 2);
-
     }
 
     .jump-box-3 {
@@ -77,20 +78,25 @@
 
     .jump-box-4 {
       top: calc(var(--margin) - 100vh / 2);
-      height: calc(15vh -  var(--margin));
+      height: calc(15vh - var(--margin));
       left: calc(var(--margin) + (100vw - var(--margin)*2.25 )/ 2);
       width: calc(100vw - var(--margin)*2.25);
       transform: scale(var(--scale-ratio2));
       transform-origin: center;
       display: flex;
       flex-direction: row;
-        justify-content: space-between; /* pushes items to left and right ends */
+      justify-content: space-between;
     }
 
     .jump-box-4:hover,
     .jump-box-4:focus {
       transform: scale(var(--scale-ratio2));
       transform-origin: center;
+    }
+
+    .jump-box-4 > * > *:focus {
+      border-radius: 20%;
+      border: 8%;
     }
 
     #logo {
@@ -112,6 +118,7 @@
       aspect-ratio: 1/1;
       cursor: pointer;
     }
+
     #mode {
       background-image: url("download-removebg-preview.png");
       background-position: center;
@@ -121,146 +128,148 @@
       aspect-ratio: 1/1;
       cursor: pointer;
     }
-img  {
-  width: calc(81% - 20px);
 
-}
-#left-of-top-bar{
-  height:100%;
-   display:flex;
-   flex-direction:row;
-}
+    img {
+      width: calc(81% - 20px);
+    }
+
+    #left-of-top-bar {
+      height: 100%;
+      display: flex;
+      flex-direction: row;
+    }
+
     #full-screen.fullscreen-on {
       background-image: url("image_processing20210620-25158-3k5dwp - Copy.png");
     }
+
     #mode.dark {
       background-image: url("702471.png");
-
     }
 
     @keyframes jumpIn {
       0% {
-        translate: -50% 100vh;
-        scale: 0.8;
+        transform: translate(-50%, 100vh) scale(0.8);
         opacity: 0;
       }
       60% {
-        translate: -50% 40vh;
-        scale: 1.05;
+        transform: translate(-50%, 40vh) scale(1.05);
         opacity: 1;
       }
       80% {
-        translate: -50% 50vh;
-        scale: 0.97;
+        transform: translate(-50%, 50vh) scale(0.97);
         opacity: 1;
       }
       100% {
-        translate: -50% 50vh;
-        scale: 1;
+        transform: translate(-50%, 50vh) scale(1);
         opacity: 1;
       }
     }
   </style>
 </head>
 <body>
+  <div id="page-container" style="z-index:200; position:absolute; top:0; left:0; width:100vw; height:100vh; background:white; display:none; overflow:auto;"></div>
+
   <video class="video" autoplay muted loop poster="ezgif-frame-001.jpg">
-    <source src="Untitled video - Made with Clipchamp.webm"/>
+    <source src="Untitled video - Made with Clipchamp.webm" />
   </video>
 
   <div class="blur-overlay"></div>
 
-  <div tabindex="0" class="jump-box jump-box-1">
-    <img src="m.png" alt="" >
+  <div tabindex="2" class="jump-box jump-box-1">
+    <img src="m.png" alt="">
   </div>
-  <div tabindex="1" class="jump-box jump-box-2">
-
-    <img src="1575103.png" alt="" >
+  <div tabindex="3" class="jump-box jump-box-2">
+    <img src="1575103.png" alt="">
   </div>
-  <div tabindex="2" class="jump-box jump-box-3">
-    <img src="other-17.png" alt="" >
-
+  <div tabindex="4" class="jump-box jump-box-3">
+    <img src="other-17.png" alt="">
   </div>
   <div class="jump-box jump-box-4">
     <div id="logo"></div>
     <div id="left-of-top-bar">
-      <div id="full-screen"></div>
-      <div id="mode"></div>
+      <div tabindex="0" id="full-screen"></div>
+      <div tabindex="1" id="mode"></div>
     </div>
   </div>
 
-  <script>
-    function updateScaleVars() {
-      const jumpBox = document.querySelector('.jump-box');
-      const jumpBox2 = document.querySelector('.jump-box-4');
+<script>
+  function updateScaleVars() {
+    const jumpBox = document.querySelector('.jump-box');
+    const jumpBox2 = document.querySelector('.jump-box-4');
 
-      if (jumpBox) {
-        const width = jumpBox.offsetWidth;
-        const scale = (width + window.innerHeight / 50) / width;
-        document.documentElement.style.setProperty('--scale-ratio', scale);
-      }
-
-      if (jumpBox2) {
-        const width2 = jumpBox2.offsetWidth;
-        const scale2 = (width2 + window.innerHeight / 50) / width2;
-        document.documentElement.style.setProperty('--scale-ratio2', scale2);
-      }
+    if (jumpBox) {
+      const width = jumpBox.offsetWidth;
+      const scale = (width + window.innerHeight / 50) / width;
+      document.documentElement.style.setProperty('--scale-ratio', scale);
     }
 
-    window.addEventListener('DOMContentLoaded', updateScaleVars);
-    window.addEventListener('resize', updateScaleVars);
+    if (jumpBox2) {
+      const width2 = jumpBox2.offsetWidth;
+      const scale2 = (width2 + window.innerHeight / 50) / width2;
+      document.documentElement.style.setProperty('--scale-ratio2', scale2);
+    }
+  }
 
-    const focusableElements = document.querySelectorAll('[tabindex]');
-    let currentFocusIndex = 0;
+  window.addEventListener('DOMContentLoaded', updateScaleVars);
+  window.addEventListener('resize', updateScaleVars);
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Tab' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        e.preventDefault();
+  const focusableElements = document.querySelectorAll('[tabindex]');
+  let currentFocusIndex = 0;
 
-        const direction = (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) ? -1 : 1;
-        currentFocusIndex = (currentFocusIndex + direction + focusableElements.length) % focusableElements.length;
-        focusableElements[currentFocusIndex].focus();
-      }
-    });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const direction = (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) ? -1 : 1;
+      currentFocusIndex = (currentFocusIndex + direction + focusableElements.length) % focusableElements.length;
+      focusableElements[currentFocusIndex].focus();
+    }
+  });
 
-    focusableElements.forEach(el => {
-      el.addEventListener('mouseenter', () => el.focus());
-      el.addEventListener('mouseleave', () => el.blur());
-    });
+  focusableElements.forEach(el => {
+    el.addEventListener('mouseenter', () => el.focus());
+    el.addEventListener('mouseleave', () => el.blur());
+  });
 
-    const fullScreenBtn = document.getElementById("full-screen");
+  const fullScreenBtn = document.getElementById("full-screen");
 
-    fullScreenBtn.addEventListener("click", async () => {
-      const isFullscreen = !!document.fullscreenElement;
+  fullScreenBtn.addEventListener("click", async () => {
+    const isFullscreen = !!document.fullscreenElement;
 
-      try {
-        if (isFullscreen) {
-          await document.exitFullscreen();
-          fullScreenBtn.classList.remove("fullscreen-on");
-        } else {
-          await document.documentElement.requestFullscreen();
-          fullScreenBtn.classList.add("fullscreen-on");
-        }
-      } catch (err) {
-        console.error("Fullscreen toggle failed:", err);
-      }
-    });
-    const moodScreenBtn = document.getElementById("mode");
-
-    moodScreenBtn.addEventListener("click", async () => {
-      const dark = moodScreenBtn.classList.contains("dark");
-
-      if (dark) {
-        moodScreenBtn.classList.remove("dark");
-        document.body.style.filter="invert(0)"
-        document.querySelector("video").style.filter="invert(0)"
+    try {
+      if (isFullscreen) {
+        await document.exitFullscreen();
+        fullScreenBtn.classList.remove("fullscreen-on");
       } else {
-        moodScreenBtn.classList.add("dark");
-        document.body.style.filter="invert(1)"
-        document.querySelector("video").style.filter="invert(1)"
-        
+        await document.documentElement.requestFullscreen();
+        fullScreenBtn.classList.add("fullscreen-on");
       }
+    } catch (err) {
+      console.error("Fullscreen toggle failed:", err);
+    }
+  });
 
-    });
-  </script>
+  const moodScreenBtn = document.getElementById("mode");
+
+  moodScreenBtn.addEventListener("click", async () => {
+    const dark = moodScreenBtn.classList.contains("dark");
+
+    if (dark) {
+      moodScreenBtn.classList.remove("dark");
+      document.body.style.filter = "invert(0)";
+      document.querySelector("video").style.filter = "invert(0)";
+    } else {
+      moodScreenBtn.classList.add("dark");
+      document.body.style.filter = "invert(1)";
+      document.querySelector("video").style.filter = "invert(1)";
+    }
+  });
+
+  document.querySelector(".jump-box-1").addEventListener("click", () => {
+    window.location.href ="exams/";
+
+  });
+</script>
+<script src="common/gamePad.js"></script>
 </body>
 </html>
