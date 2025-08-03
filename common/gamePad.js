@@ -83,8 +83,9 @@ function loop() {
   }
 
   if (state.Circle && !prevCircle) {
+    console.log("http://" + window.location.hostname + "/math-improver/")
   if (window.location.href !== "http://" + window.location.hostname + "/math-improver/") {
-    window.history.back();
+    //window.history.back();
   } else {
     focusNext(true); // Move focus backward on the main page
   }
