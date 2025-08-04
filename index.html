@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Mathmatecal Murk</title>
-  <link rel="shortcut icon" href="MurkLogo-removebg.png" type="image/x-icon">
+  <link rel="shortcut icon" href="http://localhost/math-improver/MurkLogo-removebg.png" type="image/x-icon">
   <style>
     :root {
       --margin: 2vh;
@@ -39,7 +39,50 @@
       background-color: transparent;
       pointer-events: none;
       z-index: 10;
+    display: flex;
+      align-items: center;
+      justify-content: center;
     }
+    .blur-overlay > *{
+      display: none;
+    }
+.spinner {
+  animation: rotator 1.4s linear infinite;
+}
+
+@keyframes rotator {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.path {
+  stroke-dasharray: 187;
+  stroke-dashoffset: 0;
+  transform-origin: center;
+  animation:
+    dash 1.4s ease-in-out infinite,
+    colors 5.6s ease-in-out infinite;
+}
+
+@keyframes colors {
+  0%   { stroke: #4285F4; }
+  25%  { stroke: #DE3E35; }
+  50%  { stroke: #F7C223; }
+  75%  { stroke: #1B9A59; }
+  100% { stroke: #4285F4; }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dashoffset: 187;
+  }
+  50% {
+    stroke-dashoffset: 46.75; /* 187 / 4 */
+  }
+  100% {
+    stroke-dashoffset: 187;
+  }
+}
 
     .jump-box {
       width: var(--width);
@@ -100,7 +143,7 @@
     }
 
     #logo {
-      background-image: url("MurkLogo-removebg.png");
+      background-image: url("http://localhost/math-improver/MurkLogo-removebg.png");
       background-position: center;
       background-size: contain;
       background-repeat: no-repeat;
@@ -110,7 +153,7 @@
     }
 
     #full-screen {
-      background-image: url("fullscreen.svg");
+      background-image: url("http://localhost/math-improver/fullscreen.svg");
       background-position: center;
       background-size: 50%;
       background-repeat: no-repeat;
@@ -120,7 +163,7 @@
     }
 
     #mode {
-      background-image: url("download-removebg-preview.png");
+      background-image: url("http://localhost/math-improver/download-removebg-preview.png");
       background-position: center;
       background-size: 50%;
       background-repeat: no-repeat;
@@ -140,7 +183,7 @@
     }
 
     #full-screen.fullscreen-on {
-      background-image: url("image_processing20210620-25158-3k5dwp - Copy.png");
+      background-image: url("http://localhost/math-improver/image_processing20210620-25158-3k5dwp - Copy.png");
     }
 
     #mode.dark {
@@ -168,22 +211,24 @@
   </style>
 </head>
 <body>
-  <div id="page-container" style="z-index:200; position:absolute; top:0; left:0; width:100vw; height:100vh; background:white; display:none; overflow:auto;"></div>
-
-  <video class="video" autoplay muted loop poster="ezgif-frame-001.jpg">
-    <source src="Untitled video - Made with Clipchamp.webm" />
+  <video class="video" autoplay muted loop poster="http://localhost/math-improver/ezgif-frame-001.jpg">
+    <source src="http://localhost/math-improver/Untitled video - Made with Clipchamp.webm" />
   </video>
 
-  <div class="blur-overlay"></div>
-
+  <div class="blur-overlay">
+    <svg class="spinner" width="650px" height="650px" viewBox="0 0 66 66">
+   <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+</svg>
+  </div>
+  
   <div tabindex="2" class="jump-box jump-box-1">
-    <img src="m.png" alt="">
+    <img src="http://localhost/math-improver/m.png" alt="">
   </div>
   <div tabindex="3" class="jump-box jump-box-2">
-    <img src="1575103.png" alt="">
+    <img src="http://localhost/math-improver/1575103.png" alt="">
   </div>
   <div tabindex="4" class="jump-box jump-box-3">
-    <img src="other-17.png" alt="">
+    <img src="http://localhost/math-improver/other-17.png" alt="">
   </div>
   <div class="jump-box jump-box-4">
     <div id="logo"></div>
@@ -192,84 +237,132 @@
       <div tabindex="1" id="mode"></div>
     </div>
   </div>
-
-<script>
-  function updateScaleVars() {
-    const jumpBox = document.querySelector('.jump-box');
-    const jumpBox2 = document.querySelector('.jump-box-4');
-
-    if (jumpBox) {
-      const width = jumpBox.offsetWidth;
-      const scale = (width + window.innerHeight / 50) / width;
-      document.documentElement.style.setProperty('--scale-ratio', scale);
-    }
-
-    if (jumpBox2) {
-      const width2 = jumpBox2.offsetWidth;
-      const scale2 = (width2 + window.innerHeight / 50) / width2;
-      document.documentElement.style.setProperty('--scale-ratio2', scale2);
-    }
-  }
-
-  window.addEventListener('DOMContentLoaded', updateScaleVars);
-  window.addEventListener('resize', updateScaleVars);
-
-  const focusableElements = document.querySelectorAll('[tabindex]');
-  let currentFocusIndex = 0;
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Tab' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      const direction = (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) ? -1 : 1;
-      currentFocusIndex = (currentFocusIndex + direction + focusableElements.length) % focusableElements.length;
-      focusableElements[currentFocusIndex].focus();
-    }
-  });
-
-  focusableElements.forEach(el => {
-    el.addEventListener('mouseenter', () => el.focus());
-    el.addEventListener('mouseleave', () => el.blur());
-  });
-
-  const fullScreenBtn = document.getElementById("full-screen");
-
-  fullScreenBtn.addEventListener("click", async () => {
-    const isFullscreen = !!document.fullscreenElement;
-
-    try {
-      if (isFullscreen) {
-        await document.exitFullscreen();
-        fullScreenBtn.classList.remove("fullscreen-on");
-      } else {
-        await document.documentElement.requestFullscreen();
-        fullScreenBtn.classList.add("fullscreen-on");
+  <script>
+    function updateScaleVars() {
+      const jumpBox = document.querySelector('.jump-box');
+      const jumpBox2 = document.querySelector('.jump-box-4');
+  
+      if (jumpBox) {
+        const width = jumpBox.offsetWidth;
+        const scale = (width + window.innerHeight / 50) / width;
+        document.documentElement.style.setProperty('--scale-ratio', scale);
       }
-    } catch (err) {
-      console.error("Fullscreen toggle failed:", err);
+  
+      if (jumpBox2) {
+        const width2 = jumpBox2.offsetWidth;
+        const scale2 = (width2 + window.innerHeight / 50) / width2;
+        document.documentElement.style.setProperty('--scale-ratio2', scale2);
+      }
     }
-  });
+  
+    window.addEventListener('DOMContentLoaded', updateScaleVars);
+    window.addEventListener('resize', updateScaleVars);
+  
+    const focusableElements = document.querySelectorAll('[tabindex]');
+    let currentFocusIndex = 0;
+  
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const direction = (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) ? -1 : 1;
+        currentFocusIndex = (currentFocusIndex + direction + focusableElements.length) % focusableElements.length;
+        focusableElements[currentFocusIndex].focus();
+      }
+    });
+  
+    focusableElements.forEach(el => {
+      el.addEventListener('mouseenter', () => el.focus());
+      el.addEventListener('mouseleave', () => el.blur());
+    });
+  
+    const fullScreenBtn = document.getElementById("full-screen");
+  
+    fullScreenBtn.addEventListener("click", async () => {
+      const isFullscreen = !!document.fullscreenElement;
+  
+      try {
+        if (isFullscreen) {
+          await document.exitFullscreen();
+          fullScreenBtn.classList.remove("fullscreen-on");
+        } else {
+          await document.documentElement.requestFullscreen();
+          fullScreenBtn.classList.add("fullscreen-on");
+        }
+      } catch (err) {
+        console.error("Fullscreen toggle failed:", err);
+      }
+    });
+  
+    const moodScreenBtn = document.getElementById("mode");
+  
+    moodScreenBtn.addEventListener("click", async () => {
+      const dark = moodScreenBtn.classList.contains("dark");
+  
+      if (dark) {
+        moodScreenBtn.classList.remove("dark");
+        document.body.style.filter = "invert(0)";
+        document.querySelector("video").style.filter = "invert(0)";
+      } else {
+        moodScreenBtn.classList.add("dark");
+        document.body.style.filter = "invert(1)";
+        document.querySelector("video").style.filter = "invert(1)";
+      }
+    });
+  
+    document.querySelector(".jump-box-1").addEventListener("click", () => {
+        let i=0;
+        document.querySelectorAll("body > *").forEach(e=>{
+          if(i>1 && i<document.querySelectorAll("body > *").length-1){
+            e.remove()
+          }
+          i++
+        })
+          history.pushState(null, "Mathmatecal Murk", "");
+          history.replaceState({}, "", "exams/");
+          document.body.innerHTML += ``;
+  
+    });
+    window.addEventListener("popstate", (event) => {
+      console.log(window.location.href)
+      if(window.location.href=="http://localhost/math-improver/"){
+        let i=0;
+        document.querySelectorAll("body > *").forEach(e=>{
+          if(i>1 && i<document.querySelectorAll("body > *").length-1){
+            e.remove()
+          }
+          i++
+        })
+        document.body.innerHTML+=`\
+          <div tabindex="2" class="jump-box jump-box-1">
+            <img src="http://localhost/math-improver/m.png" alt="">
+          </div>
+          <div tabindex="3" class="jump-box jump-box-2">
+            <img src="http://localhost/math-improver/1575103.png" alt="">
+          </div>
+          <div tabindex="4" class="jump-box jump-box-3">
+            <img src="http://localhost/math-improver/other-17.png" alt="">
+          </div>
+          <div class="jump-box jump-box-4">
+            <div id="logo"></div>
+            <div id="left-of-top-bar">
+              <div tabindex="0" id="full-screen"></div>
+              <div tabindex="1" id="mode"></div>
+            </div>
+          </div>`
+      }else if(window.location.href=="http://localhost/math-improver/exams/"){
+        let i=0;
+        document.querySelectorAll("body > *").forEach(e=>{
+          if(i>1 && i<document.querySelectorAll("body > *").length-1){
+            e.remove()
+          }
+          i++
+        })
+        document.body.innerHTML += ``;
+      }
+    })
+  
+  </script>
+  <script src="http://localhost/math-improver/common/gamePad.js"></script>
 
-  const moodScreenBtn = document.getElementById("mode");
-
-  moodScreenBtn.addEventListener("click", async () => {
-    const dark = moodScreenBtn.classList.contains("dark");
-
-    if (dark) {
-      moodScreenBtn.classList.remove("dark");
-      document.body.style.filter = "invert(0)";
-      document.querySelector("video").style.filter = "invert(0)";
-    } else {
-      moodScreenBtn.classList.add("dark");
-      document.body.style.filter = "invert(1)";
-      document.querySelector("video").style.filter = "invert(1)";
-    }
-  });
-
-  document.querySelector(".jump-box-1").addEventListener("click", () => {
-    window.location.href ="exams/";
-
-  });
-</script>
-<script src="common/gamePad.js"></script>
 </body>
 </html>
