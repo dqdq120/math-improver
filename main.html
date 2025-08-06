@@ -1,0 +1,121 @@
+<div tabindex="2" class="jump-box jump-box-1">
+  <img src="http://localhost/math-improver/m.png" alt="">
+</div>
+<div tabindex="3" class="jump-box jump-box-2">
+  <img src="http://localhost/math-improver/1575103.png" alt="">
+</div>
+<div tabindex="4" class="jump-box jump-box-3">
+  <img src="http://localhost/math-improver/other-17.png" alt="">
+</div>
+<div id="main" onload="clearBody()" hidden></div>
+<script>
+        function clearBody(params) {
+    var i = 0;
+    document.querySelectorAll("body > *").forEach(function (e) {
+      if (i > 4) {
+        e.remove();
+      }
+      i++;
+    });
+  }
+function loadHTML(filePth) {
+            fetch(filePth)
+          .then(response => response.text())
+          .then(data => {
+            document.body.innerHTML += data;
+            
+        })
+          .catch(error => {
+            console.error('Error loading page:', error);
+          });
+}
+
+        function hovering() {
+      
+      var focusableElements = document.querySelectorAll('[tabindex]');
+      focusableElements.forEach(function (el) {
+        el.addEventListener('mouseenter', function () {
+          el.focus();
+        });
+        el.addEventListener('mouseleave', function () {
+          el.blur();
+        });
+      });
+    }
+    function fullScreen() {
+      
+      var fullScreenBtn = document.getElementById("full-screen");
+      if (fullScreenBtn) {
+        fullScreenBtn.addEventListener("click", function () {
+          var isFullscreen = !!document.fullscreenElement;
+          if (isFullscreen) {
+            document.exitFullscreen().then(function () {
+              fullScreenBtn.classList.remove("fullscreen-on");
+            }).catch(function (err) {
+              console.error("Fullscreen exit failed:", err);
+            });
+          } else {
+            document.documentElement.requestFullscreen().then(function () {
+              fullScreenBtn.classList.add("fullscreen-on");
+            }).catch(function (err) {
+              console.error("Fullscreen request failed:", err);
+            });
+          }
+        });
+      }
+    }
+    function mode() {
+      
+      var moodScreenBtn = document.getElementById("mode");
+      if (moodScreenBtn) {
+        moodScreenBtn.addEventListener("click", function () {
+          var dark = moodScreenBtn.classList.contains("dark");
+  
+          if (dark) {
+            moodScreenBtn.classList.remove("dark");
+            document.body.style.filter = "invert(0)";
+            document.querySelector("video").style.filter = "invert(0)";
+          } else {
+            moodScreenBtn.classList.add("dark");
+            document.body.style.filter = "invert(1)";
+            document.querySelector("video").style.filter = "invert(1)";
+          }
+        });
+      }
+    }
+    function updateScaleVars() {
+      var jumpBox = document.querySelector('.jump-box');
+      if (jumpBox) {
+        var width = jumpBox.offsetWidth;
+        var scale = (width + window.innerHeight / 50) / width;
+        document.documentElement.style.setProperty('--scale-ratio', scale);
+      }
+
+    }
+    function init() {
+      updateScaleVars();
+      window.addEventListener('resize', updateScaleVars);
+
+      hovering()
+      fullScreen()
+      mode()
+    }
+    function exams() {
+      var jumpBox1 = document.querySelector(".jump-box-1");
+      if (jumpBox1) {
+        jumpBox1.addEventListener("click", function () {
+         clearBody()
+          history.pushState(null, "Mathmatecal Murk", "");
+          history.replaceState({}, "", "exams/index.html");
+
+          loadHTML("exams/index.html")
+          init()
+        });
+      }
+      
+    }
+  document.getElementById("main").addEventListener('load', function () {
+    init()
+    exams()
+  })
+</script>
