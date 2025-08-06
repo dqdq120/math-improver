@@ -1,7 +1,7 @@
 function clearBody(params) {
     var i = 0;
     document.querySelectorAll("body > *").forEach(function (e) {
-      if (i > 4) {
+      if (i > 3) {
         e.remove();
       }
       i++;
@@ -60,31 +60,31 @@ function mode() {
     });
     }
 }
-function updateScaleVars() {
-    var jumpBox = document.querySelector('.jump-box');
-    if (jumpBox) {
-    var width = jumpBox.offsetWidth;
-    var scale = (width + window.innerHeight / 50) / width;
-    document.documentElement.style.setProperty('--scale-ratio', scale);
+
+function init() {
+    var examHolder = document.querySelector(".jump-box-5");
+    console.log("Loaded JSOdgdfgN:");
+    async function loadJSON() {
+
+    try {
+        const response = await fetch("exams.json");
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        data.forEach(exam => {
+            exam["questions"].forEach(question => {
+                let ask = question["question"]
+                let answer = question["correct answer"]
+                let choices= question["choices"]
+                console.log(ask,answer,choices)
+            });
+        });
+    } catch (err) {
+        console.error("Error loading JSON:", err);
+    }
     }
 
-}
-function exams() {
-    var jumpBox1 = document.querySelector(".jump-box-1");
-    if (jumpBox1) {
-        jumpBox1.addEventListener("click", function () {
-            clearBody()
-            history.pushState(null, "Mathmatecal Murk", "");
-            history.replaceState({}, "", "exams/");
-            window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
-    });
-    }
-    
-}
-function init() {
-    updateScaleVars();
-    window.addEventListener('resize', updateScaleVars);
-    exams()
+    loadJSON();
+
     hovering()
     fullScreen()
     mode()

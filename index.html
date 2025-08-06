@@ -252,174 +252,31 @@
   <video class="video" autoplay muted loop poster="http://localhost/math-improver/ezgif-frame-001.jpg">
     <source src="http://localhost/math-improver/Untitled video - Made with Clipchamp.webm" />
   </video>
-
+  
   <div class="blur-overlay">
     <svg class="spinner" width="650px" height="650px" viewBox="0 0 66 66">
-   <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
-  </svg>
-</div>
-<script>
-          function clearBody(params) {
-    var i = 0;
-    document.querySelectorAll("body > *").forEach(function (e) {
-      if (i > 4) {
-        e.remove();
-      }
-      i++;
-    });
+      <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+    </svg>
+  </div>
+  <script type="module" src="http://localhost/math-improver/common/common.js"></script>
+<script type="module">
+import { loadHTML , clearBody} from "./common/common.js";
+function route() {
+  clearBody()
+  if (window.location.href === "http://localhost/math-improver/") {
+    loadHTML("main");
+  } else if (window.location.href === "http://localhost/math-improver/exams/") {
+    loadHTML("main");
   }
-      function hovering() {
-      
-      var focusableElements = document.querySelectorAll('[tabindex]');
-      focusableElements.forEach(function (el) {
-        el.addEventListener('mouseenter', function () {
-          el.focus();
-        });
-        el.addEventListener('mouseleave', function () {
-          el.blur();
-        });
-      });
-    }
-    function fullScreen() {
-      
-      var fullScreenBtn = document.getElementById("full-screen");
-      if (fullScreenBtn) {
-        fullScreenBtn.addEventListener("click", function () {
-          var isFullscreen = !!document.fullscreenElement;
-          if (isFullscreen) {
-            document.exitFullscreen().then(function () {
-              fullScreenBtn.classList.remove("fullscreen-on");
-            }).catch(function (err) {
-              console.error("Fullscreen exit failed:", err);
-            });
-          } else {
-            document.documentElement.requestFullscreen().then(function () {
-              fullScreenBtn.classList.add("fullscreen-on");
-            }).catch(function (err) {
-              console.error("Fullscreen request failed:", err);
-            });
-          }
-        });
-      }
-    }
-    function mode() {
-      
-      var moodScreenBtn = document.getElementById("mode");
-      if (moodScreenBtn) {
-        moodScreenBtn.addEventListener("click", function () {
-          var dark = moodScreenBtn.classList.contains("dark");
-  
-          if (dark) {
-            moodScreenBtn.classList.remove("dark");
-            document.body.style.filter = "invert(0)";
-            document.querySelector("video").style.filter = "invert(0)";
-          } else {
-            moodScreenBtn.classList.add("dark");
-            document.body.style.filter = "invert(1)";
-            document.querySelector("video").style.filter = "invert(1)";
-          }
-        });
-      }
-    }
-    function updateScaleVars() {
-      var jumpBox = document.querySelector('.jump-box');
-      if (jumpBox) {
-        var width = jumpBox.offsetWidth;
-        var scale = (width + window.innerHeight / 50) / width;
-        document.documentElement.style.setProperty('--scale-ratio', scale);
-      }
-
-    }
-    function init() {
-      updateScaleVars();
-      window.addEventListener('resize', updateScaleVars);
-
-      hovering()
-      fullScreen()
-      mode()
-    }
-    function exams() {
-      var jumpBox1 = document.querySelector(".jump-box-1");
-      if (jumpBox1) {
-        jumpBox1.addEventListener("click", function () {
-    var i = 0;
-    document.querySelectorAll("body > *").forEach(function (e) {
-      if (i > 4) {
-        e.remove();
-      }
-      i++;
-    });
-          history.pushState(null, "Mathmatecal Murk", "");
-          history.replaceState({}, "", "exams/");
-        document.body.innerHTML += `
-        <div class="jump-box jump-box-5"></div>
-        <div class="jump-box jump-box-6"></div>`;
-          init()
-        });
-      }
-      
 }
 
-window.addEventListener('DOMContentLoaded', function () {
-    init()
-    exams()
-    window.addEventListener("popstate", function (event) {
-      clearBody()
-      if (window.location.href === "http://localhost/math-improver/") {
-        var i = 0;
-        document.querySelectorAll("body > *").forEach(function (e) {
-          if (i > 4) {
-            e.remove();
-          }
-          i++;
-        });
-        
-        document.body.innerHTML += `
-        <div tabindex="2" class="jump-box jump-box-1">
-  <img src="http://localhost/math-improver/m.png" alt="">
-</div>
-<div tabindex="3" class="jump-box jump-box-2">
-  <img src="http://localhost/math-improver/1575103.png" alt="">
-</div>
-<div tabindex="4" class="jump-box jump-box-3">
-  <img src="http://localhost/math-improver/other-17.png" alt="">
-</div>`;
-      } else if (window.location.href === "http://localhost/math-improver/exams/") {
-        var i = 0;
-        document.querySelectorAll("body > *").forEach(function (e) {
-          if (i > 3) {
-            e.remove();
-          }
-          i++;
-        });
-        document.body.innerHTML += `
-        <div class="jump-box jump-box-5"></div>
-        <div class="jump-box jump-box-6"></div>`;
-      }
-      init()
-      exams()
-    });
-});
+window.addEventListener('DOMContentLoaded', route);
+
+window.addEventListener("popstate", route);
 </script>
 
 <script src="http://localhost/math-improver/common/gamePad.js"></script>
-<div class="jump-box jump-box-4">
-  <div id="logo"></div>
-  <div id="left-of-top-bar">
-    <div tabindex="0" id="full-screen"></div>
-    <div tabindex="1" id="mode"></div>
-  </div>
-</div>
 
-  <div tabindex="2" class="jump-box jump-box-1">
-    <img src="http://localhost/math-improver/m.png" alt="">
-  </div>
-  <div tabindex="3" class="jump-box jump-box-2">
-    <img src="http://localhost/math-improver/1575103.png" alt="">
-  </div>
-  <div tabindex="4" class="jump-box jump-box-3">
-    <img src="http://localhost/math-improver/other-17.png" alt="">
-  </div>
 
 </body>
 </html>
