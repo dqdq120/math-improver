@@ -10,6 +10,7 @@ function clearBody(params) {
 function hovering() {
     
     var focusableElements = document.querySelectorAll('[tabindex]');
+    console.log(focusableElements)
     focusableElements.forEach(function (el) {
     el.addEventListener('mouseenter', function () {
         el.focus();
@@ -70,21 +71,25 @@ function init() {
         const response = await fetch("exams.json");
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        data.forEach(exam => {
-            exam["questions"].forEach(question => {
-                let ask = question["question"]
-                let answer = question["correct answer"]
-                let choices= question["choices"]
-                console.log(ask,answer,choices)
-            });
+        const box = document.querySelector('.jump-box-5 > *');
+        data.forEach((exam,i,list) => {
+            box.innerHTML+=`<div class="exam" tabindex="${2+i}" >
+                                <img src="../exam-logo-exam-paper-with-pencil-icon-AeAgPyRi_t-removebg-preview.png" alt="">
+                                <div>${exam["type"]}</div>
+                            </div>`
+            // exam["questions"].forEach(question => {
+            //     let ask = question["question"]
+            //     let answer = question["correct answer"]
+            //     let choices= question["choices"]
+            // });
         });
+        hovering()
     } catch (err) {
         console.error("Error loading JSON:", err);
     }
-    }
+}
 
     loadJSON();
-
     hovering()
     fullScreen()
     mode()
