@@ -256,7 +256,10 @@
       left:50%;
 
     }
-
+ .jump-box-6 > *{
+  width:100%;
+  height: 100%;
+ }
     .exam{
       border-radius: 2vw;
       background-color: rgba(255, 255, 255, 0.87);
@@ -270,6 +273,7 @@
         scale:1.05;
         outline: none;
      }
+     
     .exam > *{
       width: 100%;
       scale: 0.9; 
@@ -279,4 +283,24 @@
       white-space: nowrap;
       text-overflow: ellipsis; /* optional: adds "..." when text is too long */
       font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    }
+
+    .question,.answers{
+      border-radius: 2vw;
+      background-color: rgba(255, 255, 255, 0.87);
+      width: 87%;
+      padding: 2%;
+      margin: 5%;
+      transition: scale 0.3s ease;
+    }
+    .question > *{
+      margin: 3%;
+    }
+    .answers > *{
+      border-radius: 1vw;
+      padding: 3%;
+      margin-bottom: 2%;
+      margin-top: 2%;
+      margin-left: 2%;
+      background-color: #00fffc;
     }

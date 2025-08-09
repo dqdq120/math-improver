@@ -73,15 +73,32 @@ function init() {
         const data = await response.json();
         const box = document.querySelector('.jump-box-5 > *');
         data.forEach((exam,i,list) => {
-            box.innerHTML+=`<div class="exam" tabindex="${2+i}" >
-                                <img src="../exam-logo-exam-paper-with-pencil-icon-AeAgPyRi_t-removebg-preview.png" alt="">
-                                <div>${exam["type"]}</div>
-                            </div>`
-            // exam["questions"].forEach(question => {
-            //     let ask = question["question"]
-            //     let answer = question["correct answer"]
-            //     let choices= question["choices"]
-            // });
+            let element = document.createElement("div");
+            element.className = "exam";
+            element.tabIndex = 2 + i;
+
+            let img = document.createElement("img");
+            img.src = "../exam-logo-exam-paper-with-pencil-icon-AeAgPyRi_t-removebg-preview.png";
+            img.alt = "";
+
+            let divType = document.createElement("div");
+            divType.textContent = exam["type"];
+
+            element.appendChild(img);
+            element.appendChild(divType);
+
+            element.addEventListener("click",e=>{
+                
+                exam["questions"].forEach(question => {
+                    let ask = question["question"]
+                    let answer = question["correct answer"]
+                    let choices= question["choices"]
+                    console.log(ask)
+                });
+            })
+            // Append to box
+            box.appendChild(element);
+
         });
         hovering()
     } catch (err) {
