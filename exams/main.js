@@ -72,6 +72,7 @@ function init() {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         const box = document.querySelector('.jump-box-5 > *');
+        const box2 = document.querySelector('.jump-box-6 > *');
         data.forEach((exam,i,list) => {
             let element = document.createElement("div");
             element.className = "exam";
@@ -88,12 +89,22 @@ function init() {
             element.appendChild(divType);
 
             element.addEventListener("click",e=>{
-                
+                box2.innerHTML=""
                 exam["questions"].forEach(question => {
                     let ask = question["question"]
                     let answer = question["correct answer"]
                     let choices= question["choices"]
-                    console.log(ask)
+                    console.log(choices[0])
+                    let text =`   <div tabindex="${1+list.length}" class="question">
+                                                <div>${ask}</div>
+                                            </div>
+                                        <div class="answers"> `
+
+                    choices.forEach((e,i,l)=>{
+                        text+=`<div> • ${choices[i]}</div>`
+                    })
+                    text+=`</div>`
+                    box2.innerHTML+=text
                 });
             })
             // Append to box
